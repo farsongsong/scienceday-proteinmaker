@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Proteinmaker — 프로틴메이커</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300&family=Space+Mono:wght@400;700&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="proteinmaker.css">
+</head>
+<body>
+
+<!-- ════ HEADER ════ -->
+<header class="header">
+  <div class="header-bg"></div>
+  <h1>Proteinmaker</h1>
+  <div class="en">단백질 서열을 노래로 변환하다</div>
+  <div class="tl">Amino Acid → Musical Parameter Mapping · Web Audio API Synthesis · Real-time 3D Visualization</div>
+  <div class="header-line"></div>
+</header>
+
+<!-- Tooltip -->
+<div id="tip"></div>
+
+<!-- ════ MAIN GRID ════ -->
+<main class="app">
+
+  <!-- ░░ LEFT COLUMN ░░ -->
+  <div class="left-col">
+
+    <!-- Protein Select -->
+    <div class="panel">
+      <div class="plabel">단백질 선택 · Protein Select</div>
+      <div class="pgrid" id="pgrid"></div>
+      <input class="cinput" id="cseq" type="text"
+             placeholder="직접 서열 입력: CYIQNCPLG ..." maxlength="120">
+      <div class="status" id="seqSt">서열을 선택하거나 직접 입력하세요</div>
+    </div>
+
+    <!-- Name → Music -->
+    <div class="panel">
+      <div class="plabel">이름 → 음악 · Your Name as Music</div>
+      <input class="ninput" id="ninput" type="text"
+             placeholder="YOUR NAME" maxlength="20">
+      <div class="nresult" id="nresult">
+        이름의 알파벳을 아미노산 코드로 변환합니다<br>
+        <small style="font-size:.55rem;color:#334;">B→N · J→L · O→Q · U→S · X→G · Z→E</small>
+      </div>
+      <button class="btn-nplay" id="btnNPlay">▷ &nbsp;이름의 노래 재생</button>
+    </div>
+
+    <!-- Legend -->
+    <div class="panel">
+      <div class="plabel">매핑 범례 · Mapping Guide</div>
+      <div class="lgrid">
+        <div class="litem">
+          <div class="ldot" style="background:var(--c-hy);box-shadow:0 0 8px rgba(79,168,255,.4)"></div>
+          <div class="ltxt">
+            <strong style="color:var(--c-hy)">소수성 Hydrophobic</strong>
+            <span>저음역대 · 사인파<br>A V I L M F W P</span>
+          </div>
+        </div>
+        <div class="litem">
+          <div class="ldot" style="background:var(--c-po);box-shadow:0 0 8px rgba(0,232,160,.4)"></div>
+          <div class="ltxt">
+            <strong style="color:var(--c-po)">극성 Polar</strong>
+            <span>중음역대 · 삼각파<br>S T C Y N Q</span>
+          </div>
+        </div>
+        <div class="litem">
+          <div class="ldot" style="background:var(--c-ps);box-shadow:0 0 8px rgba(255,96,96,.4)"></div>
+          <div class="ltxt">
+            <strong style="color:var(--c-ps)">양전하 Positive (+)</strong>
+            <span>고음역대 · 구형파<br>K R H</span>
+          </div>
+        </div>
+        <div class="litem">
+          <div class="ldot" style="background:var(--c-ng);box-shadow:0 0 8px rgba(255,170,48,.4)"></div>
+          <div class="ltxt">
+            <strong style="color:var(--c-ng)">음전하 Negative (−)</strong>
+            <span>심저음 · 톱날파<br>D E</span>
+          </div>
+        </div>
+      </div>
+      <div style="margin-top:.8rem;font-family:'Space Mono',monospace;font-size:.55rem;color:var(--dim);line-height:1.7;">
+        G (Glycine) — 특수 잔기, 짧은 쉼표<br>
+        소수성↓ 낮은음 · 친수성↑ 높은음 · 전하↑ 피치 폭 증가
+      </div>
+    </div>
+
+  </div><!-- /left-col -->
+
+  <!-- ░░ RIGHT COLUMN ░░ -->
+  <div class="right-col">
+
+    <!-- Sequence + Playback -->
+    <div class="panel">
+      <div class="plabel">서열 &amp; 재생 · Sequence &amp; Playback</div>
+      <div class="seq-wrap" id="seqDisp">
+        <span style="color:var(--dim);font-size:.68rem;">단백질을 선택하면 서열이 표시됩니다...</span>
+      </div>
+      <canvas id="cWave"></canvas>
+      <div class="note-badge" id="noteBadge">&nbsp;</div>
+      <div class="ctrl">
+        <button class="btnP" id="btnPlay">▷ &nbsp;재생 PLAY</button>
+        <button class="btnS" id="btnStop">■ &nbsp;정지</button>
+      </div>
+      <div class="spd">
+        <span class="spd-lbl">속도</span>
+        <input type="range" id="spd" min="0.3" max="3.5" step="0.1" value="1">
+        <span class="spd-lbl" id="spdV">1.0×</span>
+      </div>
+      <div class="prog"><div class="prog-fill" id="pfill"></div></div>
+      <div class="status" id="playSt">재생 준비 완료</div>
+    </div>
+
+    <!-- 3D Protein -->
+    <div class="panel">
+      <div class="plabel">3D 단백질 구조 · Protein Backbone</div>
+      <canvas id="c3d"></canvas>
+      <!-- AlphaFold N→C color legend -->
+      <div class="af-legend">
+        <span>N말단</span>
+        <div class="af-strip"></div>
+        <span>C말단</span>
+      </div>
+    </div>
+
+    <!-- Piano Roll -->
+    <div class="panel">
+      <div class="plabel">피아노 롤 · Piano Roll</div>
+      <canvas id="cPiano"></canvas>
+    </div>
+
+  </div><!-- /right-col -->
+
+</main>
+
+<script src="proteinmaker.js"></script>
+</body>
+</html>
