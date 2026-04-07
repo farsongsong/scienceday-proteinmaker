@@ -238,9 +238,10 @@ body {
 /* ── CONTROLS ── */
 .ctrl {
   display: flex;
-  gap: .7rem;
+  gap: .5rem;
   align-items: center;
   margin-top: 1rem;
+  flex-wrap: wrap;
 }
 .btnP {
   flex: 1;
