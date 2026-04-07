@@ -42,6 +42,8 @@ const PROTEINS = [
   { key:'end', name:'β-Endorphin',    desc:'내인성 진통 펩타이드',       seq:'YGGFMTSEKSQTPLVTLFKNAIIKNAYKKGE' },
   { key:'oxy', name:'Hemoglobin α',   desc:'헤모글로빈 알파사슬 앞부분', seq:'VLSPADKTNVKAAWGKVGAHAGEYGAEALERMFLSFPTTKTYFPHF' },
   { key:'cov', name:'COVID-19 Spike', desc:'스파이크 RBD 단편',          seq:'NITNLCPFGEVFNATRFASVYAWNRKRISNCVADYSVLYNSASFSTFK' },
+  { key:'glc', name:'Glucagon',       desc:'글루카곤 (혈당 조절 호르몬)', seq:'HSQGTFTSDYSKYLDSRRAQDFVQWLMNT' },
+  { key:'lyz', name:'Lysozyme',       desc:'라이소자임 (항균 효소)',      seq:'KVFGRCELAAAMKRHGLDNYRGYSLGNWVCAAKFESNFNTQATNRNTDGSTDYGILQINSRWWCNDGRTPGSRNLCNIPCSALLSSDITASVNCAKKIVSDGNGMNAWVAWRNRCKGTDVQAWIRGCRL' },
 ];
 
 const L2AA = {
@@ -56,6 +58,7 @@ let audioCtx, masterGain, analyser;
 let speed=1.0, highlightIdx=-1;
 let chain3d=[], rotAng=0;
 let pianoNotes=[], nameSeq='';
+let loopEnabled=false;
 
 // ── AUDIO ENGINE ──
 function initAudio() {
@@ -107,6 +110,15 @@ function startSequence(seq, onNote) {
 }
 
 function onPlayEnd() {
+  if (loopEnabled && !stopFlag) {
+    // Loop: restart after brief pause
+    setTimeout(() => {
+      if (loopEnabled && curSeq) {
+        document.getElementById('btnPlay').click();
+      }
+    }, 400);
+    return;
+  }
   document.getElementById('playSt').textContent='재생 완료 ✓';
   document.getElementById('btnPlay').textContent='▷ \u00a0재생 PLAY';
   document.getElementById('btnPlay').disabled=false;
@@ -543,7 +555,41 @@ document.getElementById('btnNPlay').addEventListener('click',()=>{
   setTimeout(()=>document.getElementById('btnPlay').click(),80);
 });
 
-// ── RESIZE & LOOP ──
+// ── KEYBOARD SHORTCUTS ──
+document.addEventListener('keydown', e => {
+  // Ignore if typing in an input
+  if (e.target.tagName === 'INPUT') return;
+  if (e.code === 'Space') {
+    e.preventDefault();
+    if (isPlaying) {
+      document.getElementById('btnStop').click();
+    } else {
+      document.getElementById('btnPlay').click();
+    }
+  }
+});
+
+// ── LOOP TOGGLE ──
+document.getElementById('btnLoop').addEventListener('click', () => {
+  loopEnabled = !loopEnabled;
+  const btn = document.getElementById('btnLoop');
+  btn.textContent = loopEnabled ? '⟳  반복 ON' : '⟳  반복';
+  btn.style.borderColor = loopEnabled ? 'var(--cyan)' : '';
+  btn.style.color = loopEnabled ? 'var(--cyan)' : '';
+});
+
+// ── COPY SEQUENCE ──
+document.getElementById('btnCopy').addEventListener('click', () => {
+  if (!curSeq) return;
+  navigator.clipboard.writeText(curSeq).then(() => {
+    const btn = document.getElementById('btnCopy');
+    const orig = btn.textContent;
+    btn.textContent = '✓  복사됨';
+    setTimeout(() => btn.textContent = orig, 1500);
+  });
+});
+
+
 function onResize(){
   resizeC3(); resizeCW();
   cP.width=cP.offsetWidth*devicePixelRatio;
