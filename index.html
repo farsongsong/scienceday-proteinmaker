@@ -14,8 +14,8 @@
 <header class="header">
   <div class="header-bg"></div>
   <h1>Proteinmaker</h1>
-  <div class="en">단백질 서열을 노래로 변환하다</div>
-  <div class="tl">Amino Acid → Musical Parameter Mapping · Web Audio API Synthesis · Real-time 3D Visualization</div>
+  <div class="en">mRNA → 단백질 → 3D 구조 → 노래</div>
+  <div class="tl">mRNA Codon Table · RCSB PDB Structure · Web Audio API Synthesis · Real-time Piano Roll</div>
   <div class="header-line"></div>
 </header>
 
@@ -28,28 +28,78 @@
   <!-- ░░ LEFT COLUMN ░░ -->
   <div class="left-col">
 
-    <!-- Protein Select -->
+    <!-- ① mRNA 입력 패널 -->
     <div class="panel">
-      <div class="plabel">단백질 선택 · Protein Select</div>
+      <div class="plabel">① mRNA 서열 입력 · mRNA Input</div>
+      <textarea class="mrna-input" id="mrnaInput"
+        placeholder="mRNA 서열을 입력하세요 (U 또는 T 모두 허용)&#10;예시: AUGGCUUCUGGUGCCACGACCAAAGAUGAAGUC..."
+        spellcheck="false"></textarea>
+      <div class="mrna-meta" id="mrnaMeta">—</div>
+      <button class="btn-translate" id="btnTranslate">⟶ &nbsp;코돈 → 아미노산 변환</button>
+      <div class="codon-strip" id="codonStrip"></div>
+    </div>
+
+    <!-- ② 단백질 프리셋 -->
+    <div class="panel">
+      <div class="plabel">② 단백질 프리셋 · Protein Presets</div>
       <div class="pgrid" id="pgrid"></div>
       <input class="cinput" id="cseq" type="text"
-             placeholder="직접 서열 입력: CYIQNCPLG ..." maxlength="120">
+             placeholder="직접 아미노산 서열 입력: CYIQNCPLG ..." maxlength="120">
       <div class="status" id="seqSt">서열을 선택하거나 직접 입력하세요</div>
     </div>
 
-    <!-- Name → Music -->
+    <!-- ③ PDB 구조 조회 -->
     <div class="panel">
-      <div class="plabel">이름 → 음악 · Your Name as Music</div>
+      <div class="plabel">③ PDB 구조 조회 · RCSB PDB Lookup</div>
+      <div class="pdb-row">
+        <input class="pdb-input" id="pdbId" type="text" placeholder="PDB ID (예: 1HHO, 4HHB)" maxlength="4">
+        <button class="btn-pdb" id="btnPdb">조회</button>
+      </div>
+      <div class="pdb-presets" id="pdbPresets"></div>
+      <div class="pdb-info" id="pdbInfo">PDB ID를 입력하거나 위 단백질 프리셋 선택 시 자동 조회됩니다</div>
+    </div>
+
+    <!-- ④ 이름 → 음악 -->
+    <div class="panel">
+      <div class="plabel">④ 이름 → 음악 · Your Name as Music</div>
       <input class="ninput" id="ninput" type="text"
-             placeholder="YOUR NAME" maxlength="20">
+             placeholder="YOUR NAME (B·J·O·U·X·Z 입력 불가)" maxlength="20">
       <div class="nresult" id="nresult">
         이름의 알파벳을 아미노산 코드로 변환합니다<br>
-        <small style="font-size:.55rem;color:#334;">B→N · J→L · O→Q · U→S · X→G · Z→E</small>
+        <small style="font-size:.55rem;color:var(--dim);">B·J·O·U·X·Z는 아미노산 코드에 없어 입력이 차단됩니다</small>
       </div>
       <button class="btn-nplay" id="btnNPlay">▷ &nbsp;이름의 노래 재생</button>
     </div>
 
-    <!-- Legend -->
+    <!-- 아미노산 표 -->
+    <div class="panel">
+      <div class="plabel">아미노산 목록 · Amino Acid Reference</div>
+      <div class="aa-ref-table">
+        <div class="aa-ref-row aa-ref-head">
+          <span>코드</span><span>이름</span><span>약어</span>
+          <span>코드</span><span>이름</span><span>약어</span>
+        </div>
+        <div class="aa-ref-row"><span class="aa special">G</span><span>Glycine</span><span class="aa-abbr">Gly</span><span class="aa hydrophobic">P</span><span>Proline</span><span class="aa-abbr">Pro</span></div>
+        <div class="aa-ref-row"><span class="aa hydrophobic">A</span><span>Alanine</span><span class="aa-abbr">Ala</span><span class="aa hydrophobic">V</span><span>Valine</span><span class="aa-abbr">Val</span></div>
+        <div class="aa-ref-row"><span class="aa hydrophobic">L</span><span>Leucine</span><span class="aa-abbr">Leu</span><span class="aa hydrophobic">I</span><span>Isoleucine</span><span class="aa-abbr">Ile</span></div>
+        <div class="aa-ref-row"><span class="aa hydrophobic">M</span><span>Methionine</span><span class="aa-abbr">Met</span><span class="aa polar">C</span><span>Cysteine</span><span class="aa-abbr">Cys</span></div>
+        <div class="aa-ref-row"><span class="aa hydrophobic">F</span><span>Phenylalanine</span><span class="aa-abbr">Phe</span><span class="aa polar">Y</span><span>Tyrosine</span><span class="aa-abbr">Tyr</span></div>
+        <div class="aa-ref-row"><span class="aa hydrophobic">W</span><span>Tryptophan</span><span class="aa-abbr">Trp</span><span class="aa positive">H</span><span>Histidine</span><span class="aa-abbr">His</span></div>
+        <div class="aa-ref-row"><span class="aa positive">K</span><span>Lysine</span><span class="aa-abbr">Lys</span><span class="aa positive">R</span><span>Arginine</span><span class="aa-abbr">Arg</span></div>
+        <div class="aa-ref-row"><span class="aa polar">Q</span><span>Glutamine</span><span class="aa-abbr">Gln</span><span class="aa polar">N</span><span>Asparagine</span><span class="aa-abbr">Asn</span></div>
+        <div class="aa-ref-row"><span class="aa negative">E</span><span>Glutamic Acid</span><span class="aa-abbr">Glu</span><span class="aa negative">D</span><span>Aspartic Acid</span><span class="aa-abbr">Asp</span></div>
+        <div class="aa-ref-row"><span class="aa polar">S</span><span>Serine</span><span class="aa-abbr">Ser</span><span class="aa polar">T</span><span>Threonine</span><span class="aa-abbr">Thr</span></div>
+      </div>
+      <div class="aa-ref-legend">
+        <span><em class="dot" style="background:var(--c-hy)"></em>소수성</span>
+        <span><em class="dot" style="background:var(--c-po)"></em>극성</span>
+        <span><em class="dot" style="background:var(--c-ps)"></em>양전하</span>
+        <span><em class="dot" style="background:var(--c-ng)"></em>음전하</span>
+        <span><em class="dot" style="background:var(--c-sp)"></em>특수</span>
+      </div>
+    </div>
+
+    <!-- 범례 -->
     <div class="panel">
       <div class="plabel">매핑 범례 · Mapping Guide</div>
       <div class="lgrid">
@@ -93,7 +143,7 @@
   <!-- ░░ RIGHT COLUMN ░░ -->
   <div class="right-col">
 
-    <!-- Sequence + Playback -->
+    <!-- 서열 & 재생 -->
     <div class="panel">
       <div class="plabel">서열 &amp; 재생 · Sequence &amp; Playback</div>
       <div class="seq-wrap" id="seqDisp">
@@ -116,11 +166,20 @@
       <div class="status" id="playSt">재생 준비 완료</div>
     </div>
 
-    <!-- 3D Protein -->
+    <!-- PDB 3D 뷰어 -->
     <div class="panel">
-      <div class="plabel">3D 단백질 구조 · Protein Backbone</div>
+      <div class="plabel">PDB 3D 구조 · RCSB Protein Structure</div>
+      <div class="pdb-viewer-wrap" id="pdbViewerWrap">
+        <div class="pdb-placeholder" id="pdbPlaceholder">
+          <div class="pdb-ph-icon">⬡</div>
+          <div>PDB ID를 조회하면 3D 구조가 표시됩니다</div>
+          <div style="font-size:.6rem;color:var(--dim);margin-top:.4rem;">RCSB PDB 공식 3D 뷰어 연동</div>
+        </div>
+        <iframe id="pdbFrame" class="pdb-frame" src="" style="display:none"></iframe>
+      </div>
+      <div class="pdb-atoms" id="pdbAtoms"></div>
+      <!-- Cα backbone canvas (자체 렌더) -->
       <canvas id="c3d"></canvas>
-      <!-- AlphaFold N→C color legend -->
       <div class="af-legend">
         <span>N말단</span>
         <div class="af-strip"></div>
@@ -128,7 +187,7 @@
       </div>
     </div>
 
-    <!-- Piano Roll -->
+    <!-- 피아노 롤 -->
     <div class="panel">
       <div class="plabel">피아노 롤 · Piano Roll</div>
       <canvas id="cPiano"></canvas>
